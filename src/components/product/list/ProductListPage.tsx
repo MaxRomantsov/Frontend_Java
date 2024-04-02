@@ -1,66 +1,76 @@
 import {Button, Col, Collapse, Form, Input, Pagination, Row} from "antd";
 import {Link, useSearchParams} from "react-router-dom";
-import {ICategorySearch, IGetCategories} from "../types.ts";
-import http_common from "../../../http_common.ts";
 import {useEffect, useState} from "react";
-import CategoryCard from "./CategoryCard.tsx";
+import {IGetProducts, IProductSearch} from "../types.ts";
+import ProductCard from "./ProductCard.tsx";
+import http_common from "../../../http_common.ts";
 
-const CategoryListPage = () => {
-
-    const [data, setData] = useState<IGetCategories>({
+const ProductListPage = () => {
+    const [data, setData] = useState<IGetProducts>({
         list: [],
         totalCount: 0
     });
 
     const [searchParams, setSearchParams] = useSearchParams();
-    const [formParams, setFormParams] = useState<ICategorySearch>({
-        keyword: searchParams.get('keyword') || "",
+
+    const [formParams, setFormParams] = useState<IProductSearch>({
+        keywordName: searchParams.get('keywordName') || "",
+        keywordDescription: searchParams.get('keywordName') || "",
+        keywordCategory: searchParams.get('keywordName') || "",
         page: Number(searchParams.get('page')) || 1,
-        size: Number(searchParams.get('size')) || 8
+        size: Number(searchParams.get('size')) || 3
     });
 
-    const [form] = Form.useForm<ICategorySearch>();
+    const [form] = Form.useForm<IProductSearch>();
 
-    const onSubmit = async (values: ICategorySearch) => {
-        findCategories({...formParams, page: 1, keyword: values.keyword});
+    const onSubmit = async (values: IProductSearch) => {
+        findCategories({...formParams, page: 1, keywordName: values.keywordName, keywordDescription: values.keywordDescription, keywordCategory: values.keywordCategory});
     }
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const response =
-                    await http_common.get<IGetCategories>(`/api/categories/search?keyword=${formParams.keyword}&page=${(formParams.page - 1)}&size=${formParams.size}`);
-                console.log("response.data", response.data)
+                    await http_common
+                        .get<IGetProducts>(`/api/products/search`,
+                            {
+                                params: {
+                                    ...formParams,
+                                    page: formParams.page-1
+                                }
+                            });
                 setData(response.data);
                 // setLoading(false);
             } catch (error) {
                 console.error('Error fetching categories:', error);
             }
         };
-
-
+        // setLoading(true);
         fetchData();
     }, [JSON.stringify(formParams)]);
 
-    const {list, totalCount} = data;
+    const {list,  totalCount } = data;
 
+    //Todo Make new request after deleting
     const handleDelete = async (categoryId: number) => {
         try {
             await http_common.delete(`/api/categories/${categoryId}`);
-            setData({...data, list: list.filter(x => x.id != categoryId)});
+            setData({ ...data, list: list.filter(x => x.id != categoryId)});
         } catch (error) {
             throw new Error(`Error: ${error}`);
         }
-    }
+    };
+
     const handlePageChange = async (page: number, newPageSize: number) => {
         findCategories({...formParams, page, size: newPageSize});
     };
-    const findCategories = (model: ICategorySearch) => {
+
+    const findCategories = (model: IProductSearch) => {
         setFormParams(model);
         updateSearchParams(model);
     }
 
-    const updateSearchParams = (params: ICategorySearch) =>{
+    const updateSearchParams = (params : IProductSearch) =>{
         for (const [key, value] of Object.entries(params)) {
             if (value !== undefined && value !== 0) {
                 searchParams.set(key, value);
@@ -70,17 +80,18 @@ const CategoryListPage = () => {
         }
         setSearchParams(searchParams);
     };
+
     return (
         <>
-            <h1>Список категорій</h1>
-            <Link to={"/category/create"}>
+            <h1>List of Products</h1>
+
+            <Link to={"/product/create"}>
                 <Button type="primary" style={{margin: '5px'}}>
                     ADD +
                 </Button>
             </Link>
-
             <Collapse defaultActiveKey={0}>
-                <Collapse.Panel key={1} header={"Панель пошуку"}>
+                <Collapse.Panel key={1} header={"Search Panel"}>
                     <Row gutter={16}>
                         <Form form={form}
                               onFinish={onSubmit}
@@ -92,40 +103,55 @@ const CategoryListPage = () => {
                                   justifyContent: 'center',
                                   padding: 20,
                               }}
-                    >
+                        >
                             <Form.Item
-                                label="Назва"
-                                name="keyword"
-                                htmlFor="keyword"
+                                label="Name"
+                                name="keywordName"
+                                htmlFor="keywordName"
+                            >
+                                <Input autoComplete="keyword"/>
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Description"
+                                name="keywordDescription"
+                                htmlFor="keywordDescription"
+                            >
+                                <Input autoComplete="keyword"/>
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Category"
+                                name="keywordCategory"
+                                htmlFor="keywordCategory"
                             >
                                 <Input autoComplete="keyword"/>
                             </Form.Item>
 
                             <Row style={{display: 'flex', justifyContent: 'center'}}>
                                 <Button style={{margin: 10}} type="primary" htmlType="submit">
-                                    Пошук
+                                    Search
                                 </Button>
                                 <Button style={{margin: 10}} htmlType="button" onClick={() => {
                                 }}>
-                                    Скасувати
+                                    Cansel
                                 </Button>
                             </Row>
                         </Form>
                     </Row>
                 </Collapse.Panel>
             </Collapse>
-
             <Row style={{width: '100%', display: 'flex', marginTop: '25px', justifyContent: 'center'}}>
                 <Pagination
                     showTotal={(total, range) => {
                         console.log("range ", range);
                         return (`${range[0]}-${range[1]} із ${total} записів`);
                     }}
-                    current={formParams.page}
+                    current={(formParams.page)}
                     pageSize={formParams.size}
                     total={totalCount}
                     onChange={handlePageChange}
-                    pageSizeOptions={[4, 8, 12, 20]}
+                    pageSizeOptions={[3, 6, 12, 24]}
                     showSizeChanger
                 />
             </Row>
@@ -133,11 +159,11 @@ const CategoryListPage = () => {
             <Row gutter={16}>
                 <Col span={24}>
                     <Row>
-                        {list.length === 0 ? (
-                            <h2>Список пустий</h2>
+                        {data.list.length === 0 ? (
+                            <h2>List is Empty</h2>
                         ) : (
-                            list.map((item) =>
-                                <CategoryCard key={item.id} item={item} handleDelete={handleDelete}/>,
+                            data.list.map((item) =>
+                                <ProductCard key={item.id} item={item} handleDelete={handleDelete} />,
                             )
                         )}
                     </Row>
@@ -150,17 +176,15 @@ const CategoryListPage = () => {
                         console.log("range ", range);
                         return (`${range[0]}-${range[1]} із ${total} записів`);
                     }}
-                    current={formParams.page}
+                    current={(formParams.page)}
                     pageSize={formParams.size}
                     total={totalCount}
                     onChange={handlePageChange}
-                    pageSizeOptions={[6, 12, 18, 24]}
+                    pageSizeOptions={[3, 6, 12, 24]}
                     showSizeChanger
                 />
             </Row>
-
         </>
     );
 }
-
-export default CategoryListPage;
+export default ProductListPage;
