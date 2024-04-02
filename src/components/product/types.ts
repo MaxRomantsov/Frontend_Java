@@ -24,9 +24,24 @@ export interface ICategoryName {
 }
 
 export interface IProductSearch{
-    keywordName?: string,
-    keywordDescription?: string,
-    keywordCategory?: string,
+    name?: string,
+    description?: string,
+    categoryId?: number,
     page: number,
     size: number
+}
+
+export interface IProductEditPhoto{
+    photo: string | undefined,
+    priority: number,
+}
+
+export interface IProductEdit {
+    id?: number | undefined;
+    name: string,
+    price: string,
+    description: string,
+    newPhotos: IProductEditPhoto[] | null,
+    oldPhotos: IProductEditPhoto[] | null,
+    category_id: number,
 }
