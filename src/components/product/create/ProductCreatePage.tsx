@@ -5,7 +5,7 @@ import {useNavigate} from "react-router-dom";
 import TextArea from "antd/es/input/TextArea";
 import {ICategoryName, IProductCreate} from "../types.ts";
 import http_common from "../../../http_common.ts";
-import {IUploadedFile} from "../../category/types.ts";
+import {IUploadedFile} from "../../admin/category/types.ts";
 import {useEffect, useState} from "react";
 
 const ProductCreatePage = () => {

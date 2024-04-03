@@ -1,7 +1,7 @@
 import {ICategoryItem} from "../types.ts";
 import {Button, Card, Col, Popconfirm, Typography} from "antd";
-import {APP_ENV} from "../../../env";
-import NotImage from '../../../assets/imagenot.png';
+import {APP_ENV} from "../../../../env";
+import NotImage from '../../../../assets/imagenot.png';
 import Meta from "antd/es/card/Meta";
 import {DeleteOutlined, EditOutlined} from '@ant-design/icons';
 import {Link} from "react-router-dom";

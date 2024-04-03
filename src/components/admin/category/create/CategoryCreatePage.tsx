@@ -4,7 +4,7 @@ import {Button, Form, Input, Row, Upload} from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { PlusOutlined } from '@ant-design/icons';
 import {UploadChangeParam} from "antd/es/upload";
-import http_common from "../../../http_common.ts";
+import http_common from "../../../../http_common.ts";
 
 const CategoryCreatePage = () => {
     const navigate = useNavigate();
